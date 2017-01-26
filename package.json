@@ -1,0 +1,16 @@
+{
+  "name": "prettier-bot",
+  "version": "0.0.1",
+  "description": "A bot that cleans up your codebase for you.",
+  "main": "index.js",
+  "repository": {
+    "url": "https://github.com/arjunblj/prettier-bot.git",
+    "type": "git"
+  },
+  "author": "Arjun Balaji <arjunblj@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "babel": "^6.5.2",
+    "babel-eslint": "^7.1.1"
+  }
+}
