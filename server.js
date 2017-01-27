@@ -7,8 +7,8 @@ const _ = require('lodash')
 const app = express()
 
 import {
-  GITHUB_USERNAME,
-  GITHUB_PASSWORD,
+  // GITHUB_USERNAME,
+  // GITHUB_PASSWORD,
   REPOSITORY_OWNER,
   REPOSITORY_NAME,
   BRANCH_TO_MONITOR,
@@ -52,8 +52,8 @@ async function downloadFile ({ filename }, sha) {
         if (error) {
           console.log(error)
         } else {
-          const { filename, patch, sha } = data
-          resolve({ filename, patch, sha, content: atob(data.content) })
+          const { name, path, sha } = data
+          resolve({ name, path, sha, content: atob(data.content) })
         }
       }
     )
@@ -80,6 +80,30 @@ async function createBranch () {
   })
 }
 
+async function updateFile (name, path, sha, formatted) {
+  return new Promise((resolve, reject) => {
+    github.repos.updateFile(
+      {
+        owner: REPOSITORY_OWNER,
+        repo: REPOSITORY_NAME,
+        path: path,
+        message: `Linting @${author.username}'s code.`,
+        content: Buffer.from(formatted).toString('base64'),
+        sha: sha,
+        branch: newBranchInfo.ref
+      },
+      (error, data) => {
+        if (error) {
+          console.log(error)
+        } else {
+          console.log(data)
+          resolve(data)
+        }
+      }
+    )
+  })
+}
+
 function checkIfBranchExists () {
   return new Promise((resolve, reject) => {
     github.gitdata.getReferences(
@@ -97,11 +121,13 @@ function checkIfBranchExists () {
   })
 }
 
+let author = null
 let commitHash = null
 let latestCommitHash = null
 let newBranchInfo = null
 
 async function treatPayload (payload) {
+  author = payload.head_commit.author
   latestCommitHash = payload.after
 
   const branchToLintExists = await checkIfBranchExists()
@@ -116,8 +142,10 @@ async function treatPayload (payload) {
         commitHash = sha
 
         filterJavascriptFiles(files).map(async file => {
-          const { filename, patch, content } = await downloadFile(file, sha)
-          console.log(prettier.format(content))
+          const { name, path, content, sha } = await downloadFile(file, commitHash)
+
+          const formatted = prettier.format(content)
+          await updateFile(name, path, sha, formatted)
         })
       })
     }
