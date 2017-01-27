@@ -96,7 +96,27 @@ async function updateFile (name, path, sha, formatted) {
         if (error) {
           console.log(error)
         } else {
-          console.log(data)
+          resolve(data)
+        }
+      }
+    )
+  })
+}
+
+async function openPR () {
+  return new Promise((resolve, reject) => {
+    github.pullRequests.create(
+      {
+        owner: REPOSITORY_OWNER,
+        repo: REPOSITORY_NAME,
+        title: `Linting fixes for @${author.username}.`,
+        head: newBranchInfo.ref,
+        base: `refs/heads/${BRANCH_TO_MONITOR}`
+      },
+      (error, data) => {
+        if (error) {
+          console.log(error)
+        } else {
           resolve(data)
         }
       }
@@ -145,7 +165,9 @@ async function treatPayload (payload) {
           const { name, path, content, sha } = await downloadFile(file, commitHash)
 
           const formatted = prettier.format(content)
+
           await updateFile(name, path, sha, formatted)
+          await openPR()
         })
       })
     }
