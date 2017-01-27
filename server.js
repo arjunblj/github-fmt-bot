@@ -167,8 +167,8 @@ async function treatPayload (payload) {
           const formatted = prettier.format(content)
 
           await updateFile(name, path, sha, formatted)
-          await openPR()
         })
+        await openPR()
       })
     }
   }
