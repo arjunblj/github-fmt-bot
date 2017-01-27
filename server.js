@@ -1,3 +1,4 @@
+const prettier = require('prettier')
 const atob = require('atob')
 const express = require('express')
 const bodyParser = require('body-parser')
@@ -18,10 +19,7 @@ const github = new GitHubApi({
   version: '3.0.0',
   headers: { 'user-agent': 'prettier-bot' }
 })
-github.authenticate({
-  type: 'oauth',
-  token: GITHUB_AUTH_TOKEN
-})
+github.authenticate({ type: 'oauth', token: GITHUB_AUTH_TOKEN })
 
 async function getFilesFromCommit ({ id: sha }) {
   return new Promise((resolve, reject) => {
@@ -38,12 +36,18 @@ async function getFilesFromCommit ({ id: sha }) {
   })
 }
 
-const filterJavascriptFiles = files => files.filter(({ filename }) => filename.match(/.*(.js|.jsx)$/))
+const filterJavascriptFiles = files =>
+  files.filter(({ filename }) => filename.match(/.*(.js|.jsx)$/))
 
 async function downloadFile ({ filename }, sha) {
   return new Promise((resolve, reject) => {
     github.repos.getContent(
-      { owner: REPOSITORY_OWNER, repo: REPOSITORY_NAME, path: filename, ref: sha },
+      {
+        owner: REPOSITORY_OWNER,
+        repo: REPOSITORY_NAME,
+        path: filename,
+        ref: sha
+      },
       (error, data) => {
         if (error) {
           console.log(error)
@@ -56,7 +60,27 @@ async function downloadFile ({ filename }, sha) {
   })
 }
 
-function checkIfBranchIsSpecified (branch) {
+async function createBranch () {
+  return new Promise((resolve, reject) => {
+    github.gitdata.createReference(
+      {
+        owner: REPOSITORY_OWNER,
+        repo: REPOSITORY_NAME,
+        sha: latestCommitHash,
+        ref: `refs/heads/${latestCommitHash.slice(0, 5)}-lint`
+      },
+      (error, data) => {
+        if (error) {
+          console.log(error)
+        } else {
+          resolve(data)
+        }
+      }
+    )
+  })
+}
+
+function checkIfBranchExists () {
   return new Promise((resolve, reject) => {
     github.gitdata.getReferences(
       { owner: REPOSITORY_OWNER, repo: REPOSITORY_NAME },
@@ -74,19 +98,26 @@ function checkIfBranchIsSpecified (branch) {
 }
 
 let commitHash = null
+let latestCommitHash = null
 
 async function treatPayload (payload) {
-  const gitBranchIsSpecified = await checkIfBranchIsSpecified()
+  latestCommitHash = payload.after
 
-  if (gitBranchIsSpecified) {
-    payload.commits.map(async (commit) => {
+  const branchToLintExists = await checkIfBranchExists()
+
+  if (
+    branchToLintExists && payload.ref.split('/').pop() === BRANCH_TO_MONITOR
+  ) {
+    await createBranch()
+
+    payload.commits.map(async commit => {
       const { files, sha } = await getFilesFromCommit(commit)
 
       commitHash = sha
 
-      filterJavascriptFiles(files).map(async (file) => {
+      filterJavascriptFiles(files).map(async file => {
         const { filename, patch, content } = await downloadFile(file, sha)
-        console.log(content)
+        console.log(prettier.format(content))
       })
     })
   }
