@@ -1,5 +1,5 @@
 {
-  "name": "prettier-bot",
+  "name": "github-fmt-bot",
   "version": "0.0.1",
   "description": "A bot that cleans up your codebase for you.",
   "main": "server.js",
