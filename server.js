@@ -99,27 +99,28 @@ function checkIfBranchExists () {
 
 let commitHash = null
 let latestCommitHash = null
+let newBranchInfo = null
 
 async function treatPayload (payload) {
   latestCommitHash = payload.after
 
   const branchToLintExists = await checkIfBranchExists()
 
-  if (
-    branchToLintExists && payload.ref.split('/').pop() === BRANCH_TO_MONITOR
-  ) {
-    await createBranch()
+  if (branchToLintExists && payload.ref.split('/').pop() === BRANCH_TO_MONITOR) {
+    newBranchInfo = await createBranch()
 
-    payload.commits.map(async commit => {
-      const { files, sha } = await getFilesFromCommit(commit)
+    if (newBranchInfo.meta.status === '201 Created') {
+      payload.commits.map(async commit => {
+        const { files, sha } = await getFilesFromCommit(commit)
 
-      commitHash = sha
+        commitHash = sha
 
-      filterJavascriptFiles(files).map(async file => {
-        const { filename, patch, content } = await downloadFile(file, sha)
-        console.log(prettier.format(content))
+        filterJavascriptFiles(files).map(async file => {
+          const { filename, patch, content } = await downloadFile(file, sha)
+          console.log(prettier.format(content))
+        })
       })
-    })
+    }
   }
 }
 
