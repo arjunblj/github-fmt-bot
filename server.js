@@ -5,6 +5,8 @@ import bodyParser from 'body-parser'
 import GitHubApi from 'github'
 import _ from 'lodash'
 
+import prettierOpts from './opts'
+
 if (process.env.NODE_ENV !== 'production') { require('dotenv').load() }
 
 const { REPOSITORY_OWNER, REPOSITORY_NAME, BRANCH_TO_MONITOR, GITHUB_AUTH_TOKEN } = process.env
@@ -176,7 +178,7 @@ async function treatPayload (payload) {
         await filterJavascriptFiles(files).map(async file => {
           const { name, path, content, sha } = await downloadFile(file, commitHash)
 
-          const formatted = prettier.format(content)
+          const formatted = prettier.format(content, prettierOpts)
           const latestBranch = await getLatestBranchHash()
 
           await updateFile(name, path, sha, formatted)
