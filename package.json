@@ -2,7 +2,11 @@
   "name": "prettier-bot",
   "version": "0.0.1",
   "description": "A bot that cleans up your codebase for you.",
-  "main": "index.js",
+  "main": "server.js",
+  "scripts": {
+    "start": "node_modules/.bin/babel-node server.js",
+    "dev": "nodemon node_modules/.bin/babel-node server.js"
+  },
   "repository": {
     "url": "https://github.com/arjunblj/prettier-bot.git",
     "type": "git"
@@ -10,7 +14,20 @@
   "author": "Arjun Balaji <arjunblj@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "babel": "^6.5.2",
-    "babel-eslint": "^7.1.1"
+    "babel-eslint": "^7.1.1",
+    "eslint": "^3.14.1",
+    "eslint-config-standard": "^6.2.1",
+    "eslint-plugin-promise": "^3.4.0",
+    "eslint-plugin-standard": "^2.0.1"
+  },
+  "dependencies": {
+    "atob": "^2.0.3",
+    "babel-cli": "^6.22.2",
+    "babel-preset-latest": "^6.22.0",
+    "body-parser": "^1.16.0",
+    "express": "^4.14.0",
+    "github": "^8.1.1",
+    "lodash": "^4.17.4",
+    "prettier": "^0.11.0"
   }
 }
