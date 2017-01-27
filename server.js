@@ -5,12 +5,9 @@ import bodyParser from 'body-parser'
 import GitHubApi from 'github'
 import _ from 'lodash'
 
-import {
-  REPOSITORY_OWNER,
-  REPOSITORY_NAME,
-  BRANCH_TO_MONITOR,
-  GITHUB_AUTH_TOKEN
-} from './config'
+if (process.env.NODE_ENV !== 'production') { require('dotenv').load() }
+
+const { REPOSITORY_OWNER, REPOSITORY_NAME, BRANCH_TO_MONITOR, GITHUB_AUTH_TOKEN } = process.env
 
 const app = express()
 
@@ -138,7 +135,7 @@ function checkIfBranchExists () {
   })
 }
 
-async function getLatestBranchHash() {
+async function getLatestBranchHash () {
   return new Promise((resolve, reject) => {
     github.repos.getBranch(
       { owner: REPOSITORY_OWNER, repo: REPOSITORY_NAME, branch: `${latestMasterCommitHash.slice(0, 5)}-lint` },
