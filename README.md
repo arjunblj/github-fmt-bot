@@ -1,6 +1,8 @@
 github-fmt-bot
 ==================
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/arjunblj/github-fmt-bot.svg)](https://greenkeeper.io/)
+
 > A simple GitHub bot that'll clean up your messy code and open a PR with the changes.
 
 Writing code is hard and formatting is even harder. Thanks to [James Long's](https://github.com/jlongster) incredible project [prettier](https://github.com/jlongster/prettier), we're one step closer. This is a turn key bot that'll take a GitHub user token, listen to pushes on a specified branch (e.g. `master`) and open a pull-request enforcing any style violations made in the process.
